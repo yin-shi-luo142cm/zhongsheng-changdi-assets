@@ -20,7 +20,8 @@
 ## 文件
 
 - `index.html`：从原始正则 `replaceString` 提取的 HTML 主体，内容保持原样。
-- `replace-string.txt`：第二阶段生成的最小远端载入框架示例。URL 固定到测试主体所在的 commit SHA：`4ce61772df018ee107a696906ea63ee17c9e6ceb`。
+- `replace-string.txt`：最小远端载入框架示例。URL 固定到测试主体所在的 commit SHA：`4ce61772df018ee107a696906ea63ee17c9e6ceb`。
+- `test-regex.json`：可导入 SillyTavern 的完整测试正则对象，保留原样本参数，仅更换测试名称、测试 ID 与 `replaceString`。
 
 ## 当前测试 loader 的工作方式
 
@@ -53,6 +54,17 @@
 - 多次触发、消息重绘、清理旧节点与加载失败后的恢复行为。
 
 特别注意：本测试 loader 使用 `fetch + DOMParser`，并主动重新创建 module script；它不是对原始样本的直接复制，也尚未证明能在 SillyTavern 正则替换输出中运行。
+
+## 在 SillyTavern 中进行实机验证
+
+1. 下载并导入 `test-regex.json`，确认正则名称显示为「[测试]状态栏远端载入」。
+2. 在测试对话中发送包含 `<StatusPlaceHolderImpl/>` 的消息，确认正则确实触发。
+3. 检查结果是否显示状态栏内容，而不是只显示 HTML／JavaScript 代码。
+4. 打开浏览器开发者工具 Console／Network，检查 raw HTML 请求与 jsDelivr module 请求是否成功；特别留意 CORS、模块加载与全局对象错误。
+5. 再次触发、编辑消息及重绘，观察是否出现重复界面或旧节点残留。
+6. 暂时断网或将测试 URL 改成无效地址，仅在本地测试副本中操作，确认失败提示是否出现；不要修改公开仓库中的固定测试配置。
+
+若页面未显示内容，请提供 Console 错误与 Network 请求状态；这比单凭画面更容易定位是正则执行、HTML 注入、CORS 还是模块依赖问题。
 
 ## 验证边界
 
