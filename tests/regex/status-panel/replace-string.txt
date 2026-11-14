@@ -5,6 +5,13 @@
   const root = document.getElementById('zscd-test-status-panel-root');
   if (!root || root.dataset.loading === 'true' || root.dataset.loaded === 'true') return;
 
+  function fail(error) {
+    root.dataset.loading = 'false';
+    root.dataset.failed = 'true';
+    root.textContent = '测试介面载入失败，请检查网络或浏览器控制台。';
+    console.error('[众生长地 regex test] remote resource load failed:', error);
+  }
+
   root.dataset.loading = 'true';
 
   fetch('https://raw.githubusercontent.com/yin-shi-luo142cm/zhongsheng-changdi-assets/4ce61772df018ee107a696906ea63ee17c9e6ceb/tests/regex/status-panel/index.html')
@@ -31,22 +38,25 @@
       root.innerHTML = remote.body.innerHTML;
 
       const sourceModule = remote.querySelector('script[type="module"]');
-      if (sourceModule) {
-        const module = document.createElement('script');
-        module.type = 'module';
-        module.textContent = sourceModule.textContent;
-        document.body.appendChild(module);
+      if (!sourceModule) {
+        root.dataset.loaded = 'true';
+        root.dataset.loading = 'false';
+        return;
       }
 
-      root.dataset.loaded = 'true';
-      root.dataset.loading = 'false';
+      const module = document.createElement('script');
+      module.type = 'module';
+      module.textContent = sourceModule.textContent;
+      module.addEventListener('load', () => {
+        root.dataset.loaded = 'true';
+        root.dataset.loading = 'false';
+      }, { once: true });
+      module.addEventListener('error', () => {
+        fail(new Error('远端 HTML 的 module script 执行失败'));
+      }, { once: true });
+      document.body.appendChild(module);
     })
-    .catch(error => {
-      root.dataset.loading = 'false';
-      root.dataset.failed = 'true';
-      root.textContent = '测试介面载入失败，请检查网络或浏览器控制台。';
-      console.error('[众生长地 regex test] remote resource load failed:', error);
-    });
+    .catch(fail);
 })();
 </script>
 ```
