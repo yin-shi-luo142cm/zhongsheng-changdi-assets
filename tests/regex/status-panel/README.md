@@ -23,6 +23,12 @@
 - `replace-string.txt`：最小远端载入框架示例。URL 固定到测试主体所在的 commit SHA：`4ce61772df018ee107a696906ea63ee17c9e6ceb`。
 - `test-regex.json`：可导入 SillyTavern 的完整测试正则对象，保留原样本参数，仅更换测试名称、测试 ID 与 `replaceString`。
 
+## 实机验证修正
+
+用户已回报：该测试正则在实际 SillyTavern 环境成功载入远端内容。实机修复要求 loader 在输出的嵌入结构外层补上 `<body>...</body>`；远端 HTML 仍作为 body 内部内容解析和嵌入，不要求远端文件重复提供完整页面外壳。
+
+当前目录中的 `replace-string.txt` 与 `test-regex.json` 已同步用户提供的成功版本。此结果确认的是这份隔离测试在用户环境中的成功路径，不代表所有浏览器、酒馆版本或重复渲染行为均已全面验证。
+
 ## 当前测试 loader 的工作方式
 
 1. 使用浏览器 `fetch()` 请求固定 SHA 的 raw HTML。
