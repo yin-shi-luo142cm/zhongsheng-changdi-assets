@@ -31,6 +31,29 @@
 5. 重新创建远端 `type="module"` 脚本节点，使模块脚本有机会执行。
 6. 请求失败时显示错误提示，并写入控制台。
 
+
+## 静态检查结果
+
+- 原始 JSON 可解析。
+- HTML 文档经 HTMLParser 检查，未发现未匹配的结束标签或未闭合标签。
+- 内嵌 module JavaScript 通过 Node.js 语法检查。
+- 测试 loader JavaScript 通过 Node.js 语法检查。
+- 远端固定 SHA 的 `index.html` 已通过 GitHub raw URL 读取，并确认包含 `.status-panel` 与 module script。
+- 原始 HTML 主体约 33.7 KB；内嵌 module 脚本约 18.0 KB。
+
+## 尚未完成的实机验证
+
+当前执行环境无法启动用户的 SillyTavern 页面，也无法代替浏览器完成运行时测试。因此以下项目**尚未通过验证**：
+
+- `replaceString` 输出是否被目标版本正确解析为可执行 HTML，而不是显示成代码块。
+- 正则替换内容中的内嵌 `<script>` 是否会执行。
+- 浏览器对 `raw.githubusercontent.com` 的 CORS 请求是否成功。
+- 重新创建的 module script 是否能成功导入原有 jsDelivr 模块。
+- 目标环境是否提供样本依赖的酒馆全局对象与 jQuery／Lodash。
+- 多次触发、消息重绘、清理旧节点与加载失败后的恢复行为。
+
+特别注意：本测试 loader 使用 `fetch + DOMParser`，并主动重新创建 module script；它不是对原始样本的直接复制，也尚未证明能在 SillyTavern 正则替换输出中运行。
+
 ## 验证边界
 
 仓库提交和静态检查只能证明文件已发布、路径可读取及代码语法可解析。Markdown 渲染、正则替换时机、浏览器跨域请求、模块导入、酒馆全局对象、重复触发与清理行为，必须在实际 SillyTavern／酒馆助手环境中测试；未实机测试前不得标记为通过。
