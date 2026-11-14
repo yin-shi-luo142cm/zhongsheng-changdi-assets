@@ -1,0 +1,1050 @@
+<html>
+<head>
+  <style>
+    :root{
+      --panel-bg: rgba(255, 247, 252, 0.84);
+      --panel-bg-2: rgba(244, 236, 255, 0.72);
+      --panel-line: rgba(186, 152, 202, 0.32);
+      --text-main: #2f2536;
+      --text-soft: #665774;
+      --shadow-soft: 0 14px 34px rgba(133, 96, 160, 0.14);
+    }
+
+    .status-panel{
+      padding: 12px;
+      border: 1px solid var(--panel-line);
+      border-radius: 18px;
+      background:
+        radial-gradient(circle at top left, rgba(255,255,255,.92), transparent 42%),
+        radial-gradient(circle at bottom right, rgba(223, 206, 255, .48), transparent 38%),
+        linear-gradient(135deg, var(--panel-bg), var(--panel-bg-2));
+      color: var(--text-main);
+      box-shadow: var(--shadow-soft);
+      backdrop-filter: blur(18px);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .status-panel::before,
+    .status-panel::after{
+      content: "";
+      position: absolute;
+      inset: auto;
+      pointer-events: none;
+      filter: blur(22px);
+      opacity: .7;
+    }
+    .status-panel::before{
+      width: 180px; height: 180px;
+      top: -60px; right: -50px;
+      background: rgba(255, 199, 223, .42);
+    }
+    .status-panel::after{
+      width: 220px; height: 220px;
+      bottom: -90px; left: -70px;
+      background: rgba(208, 194, 255, .35);
+    }
+
+    .base-info, .tabs-block{ position: relative; z-index: 1; }
+
+    .base-info{
+      display:flex;
+      flex-direction:column;
+      gap:10px;
+      margin-bottom:12px;
+    }
+    .base-group{
+      display:flex;
+      flex-wrap:wrap;
+      gap:8px;
+    }
+    .base-divider{
+      width:100%;
+      border-top:1px solid rgba(162, 132, 176, .28);
+      opacity:.95;
+      margin:3px 0 5px;
+    }
+
+    .info-item,
+    .tab-btn,
+    .tab-content,
+    .list-item,
+    .char-card,
+    .warning-box,
+    .oath-count-box{
+      border:1px solid var(--panel-line);
+      border-radius:16px;
+      background: rgba(255,255,255,.68);
+      box-shadow: 0 10px 24px rgba(118, 87, 148, .10);
+      backdrop-filter: blur(14px);
+      transition:
+        transform .22s ease,
+        box-shadow .22s ease,
+        border-color .22s ease,
+        background .22s ease,
+        filter .22s ease;
+    }
+
+    .info-item{
+      padding:6px 10px;
+    }
+    .info-item:hover,
+    .list-item:hover,
+    .char-card:hover,
+    .tab-btn:hover{
+      transform: translateY(-2px);
+      box-shadow: 0 16px 30px rgba(118, 87, 148, .16);
+      border-color: rgba(173, 136, 196, .48);
+    }
+
+    .info-label,
+    .detail-label{
+      font-weight:700;
+      color: var(--text-soft);
+    }
+
+    .tabs{
+      display:flex;
+      flex-wrap:wrap;
+      justify-content:center;
+      gap:8px;
+      margin-bottom:12px;
+    }
+
+    .tab-btn{
+      position:relative;
+      overflow:hidden;
+      padding:7px 12px;
+      border-left:0;
+      border-right:0;
+      border-top:2px solid rgba(180, 148, 196, .34);
+      border-bottom:2px solid rgba(180, 148, 196, .34);
+      border-radius:14px;
+      background: linear-gradient(135deg, rgba(255,255,255,.78), rgba(243, 232, 255, .78));
+      color: #3b2f45;
+      cursor:pointer;
+      font-weight:700;
+      letter-spacing:.02em;
+      text-align:center;
+    }
+    .tab-btn::after{
+      content:"";
+      position:absolute;
+      inset:-30% auto auto -40%;
+      width:45%;
+      height:160%;
+      transform: rotate(18deg) translateX(-120%);
+      background: linear-gradient(90deg, transparent, rgba(255,255,255,.72), transparent);
+      opacity:0;
+    }
+    .tab-btn:hover::after{
+      opacity:1;
+      animation: tabSheen .85s ease;
+    }
+    .tab-btn.active{
+      background: linear-gradient(135deg, #ffd9ea, #e5dcff);
+      color:#251d2c;
+      border-color: rgba(170, 132, 188, .54);
+      box-shadow: 0 12px 24px rgba(146, 108, 176, .18);
+      transform: translateY(-1px) scale(1.01);
+    }
+
+    .tab-content{
+      display:none;
+      border-radius:18px;
+      padding:12px;
+      margin-bottom:10px;
+      background: rgba(255,255,255,.58);
+    }
+    .tab-content.active{
+      display:block;
+      animation: panelIn .28s ease-out;
+    }
+
+    .list-item,
+    .char-card{
+      border-radius:14px;
+      padding:10px;
+      margin-bottom:8px;
+      background: linear-gradient(180deg, rgba(255,255,255,.76), rgba(247, 241, 255, .72));
+    }
+
+    .item-header, .char-head{
+      display:flex;
+      justify-content:space-between;
+      gap:8px;
+      margin-bottom:6px;
+      align-items:center;
+    }
+    .item-title{
+      font-weight:800;
+      color: #2b2133;
+      letter-spacing:.01em;
+    }
+    .item-badge{
+      display:inline-flex;
+      align-items:center;
+      border:1px solid rgba(170, 141, 188, .42);
+      border-radius:999px;
+      padding:2px 8px;
+      font-size:.88em;
+      white-space:nowrap;
+      background: linear-gradient(135deg, rgba(255, 225, 238, .92), rgba(226, 216, 255, .92));
+      color:#473856;
+    }
+
+    .item-title,
+    .info-label,
+    .detail-label,
+    .tab-btn,
+    .relation-name,
+    .item-worn,
+    .relation-present{
+      font-weight: 800;
+    }
+
+    .item-header-right{
+      display:flex;
+      align-items:center;
+      gap:6px;
+    }
+
+    .item-worn,
+    .relation-present{
+      border:0;
+      background:transparent;
+      box-shadow:none;
+      padding:0;
+      border-radius:0;
+      color:#6fd9c8;
+      white-space:nowrap;
+    }
+
+    .relation-name{
+      color:#5968ff;
+    }
+
+    .relation-favor{
+      white-space:nowrap;
+    }
+
+    .relation-favor.favor-high{
+      color:#ff72d2;
+    }
+
+    .relation-favor.favor-low{
+      color:#8f2432;
+    }
+
+    .relation-bg-text{
+      font-style: italic;
+    }
+
+    .item-detail, .detail-row{ margin-top:4px; }
+    .detail-row{ color: var(--text-main); }
+    .empty{
+      opacity:.8;
+      font-style:italic;
+      color:#7b6c87;
+    }
+
+    .warning-box{
+      border-radius:16px;
+      padding:10px;
+      margin-bottom:10px;
+      background: linear-gradient(135deg, rgba(255,255,255,.72), rgba(248, 240, 255, .72));
+    }
+
+    .oath-count-box{
+      border-radius:18px;
+      padding:14px;
+      margin-bottom:10px;
+      text-align:center;
+      background: linear-gradient(135deg, rgba(255,255,255,.8), rgba(245, 234, 255, .8));
+    }
+    .oath-count-number{
+      font-size:2.5em;
+      font-weight:900;
+      line-height:1;
+      margin-bottom:4px;
+      color:#a93d67;
+      text-shadow: 0 0 14px rgba(234, 110, 149, .18);
+    }
+    .oath-count-label{
+      font-size:.95em;
+      color:#65556f;
+    }
+
+    .relation-card{ overflow:hidden; }
+    .relation-basic{
+      display:flex;
+      flex-direction:column;
+      gap:4px;
+      cursor:pointer;
+      user-select:none;
+      transition: transform .2s ease;
+    }
+    .relation-basic:hover{
+      transform: translateY(-1px);
+    }
+    .relation-basic-top{
+      display:flex;
+      justify-content:space-between;
+      gap:8px;
+      align-items:center;
+    }
+    .relation-basic-main{
+      display:flex;
+      flex-wrap:wrap;
+      gap:6px;
+      align-items:center;
+    }
+    .relation-basic-sub{
+      display:flex;
+      flex-wrap:wrap;
+      gap:8px;
+      opacity:.92;
+      color: var(--text-soft);
+      align-items:center;
+    }
+    .relation-arrow{
+      font-weight:900;
+      font-size:1.05em;
+      margin-left:4px;
+      color:#8d74a2;
+      transition: transform .22s ease, color .22s ease;
+    }
+    .relation-card.collapsed .relation-body{ display:none; }
+
+    .press-anim{
+      animation: clickPop .18s ease-out;
+    }
+    .tab-btn.press-anim,
+    .relation-basic.press-anim{
+      transform: translateY(1px) scale(.97);
+    }
+
+    /* 世界 / 地点 */
+    .base-group.base-world{
+      display:flex;
+      flex-direction:column;
+      gap:8px;
+    } 
+
+    .base-group.base-world .info-item{
+      width:100%; 
+      flex: 1 1 100%;
+      text-align: left;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding: 10px 14px;
+      border-top: 0;
+      border-bottom: 0;
+      border-left: 2px solid rgba(168, 137, 190, .35);
+      border-right: 2px solid rgba(168, 137, 190, .35);
+      background: linear-gradient(
+        180deg,
+        rgba(255, 255, 255, 0),
+        rgba(248, 238, 255, .76) 50%,
+        rgba(255, 255, 255, 0)
+      );
+    }
+
+    .base-group.base-meta .info-item,
+    .info-item.info-stack{
+      flex: 1 1 160px;
+      min-width: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      gap: 2px;
+      padding: 8px 10px;
+    }
+
+    .info-value{
+      display: block;
+      font-weight: 700;
+      color: var(--text-main);
+    }
+
+    .info-item.info-coin{
+      flex: 1 1 100%;
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      align-items: center;
+      text-align: center;
+      padding: 8px 10px;
+    }
+
+    .base-coin-row,
+    .coin-row{
+      width: 100%;
+      display: flex;
+      justify-content: space-evenly;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .coin-item{
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      white-space: nowrap;
+      font-weight: 700;
+    }
+
+    .coin-gold{ color: #8b6a12; }
+    .coin-silver{ color: #7b7b83; }
+    .coin-copper{ color: #8a5a3c; }
+
+    .tone-effect-buff{ color: #d65a8a; }
+    .tone-effect-debuff{ color: #c94356; }
+    .tone-effect-special{ color: #8b63df; }
+
+    .tone-item-道具{ color: #d05f8e; }
+    .tone-item-容器{ color: #8a71db; }
+    .tone-item-载体{ color: #c66a7a; }
+    .tone-item-消耗品{ color: #d17b52; }
+    .tone-item-材料{ color: #8f84d8; }
+    .tone-item-武器{ color: #d44f63; }
+    .tone-item-装备{ color: #b06fd8; }
+
+    .tone-skill-主动{ color: #d55f8b; }
+    .tone-skill-被动{ color: #8a70d9; }
+    .tone-skill-复合{ color: #cc6e52; }
+
+    .tone-quest-high{ color: #d84f5d; }
+    .tone-quest-mid{ color: #c08a32; }
+    .tone-quest-low{ color: #7f71c8; }
+
+    .value-label,
+    .reward-label{
+      color: #b9902c;
+      font-weight: 700;
+    }
+
+    #tab-oaths{
+      background:
+        radial-gradient(circle at top left, rgba(255, 76, 104, .12), transparent 30%),
+        radial-gradient(circle at bottom right, rgba(255, 28, 84, .10), transparent 28%),
+        linear-gradient(180deg, rgba(18, 8, 14, .98), rgba(40, 8, 17, .98));
+      color: #ffd6dc;
+      border-color: rgba(255, 86, 106, .28);
+      box-shadow: 0 18px 42px rgba(0,0,0,.28), inset 0 0 24px rgba(255, 58, 96, .08);
+    }
+    #tab-oaths .warning-box,
+    #tab-oaths .oath-count-box,
+    #tab-oaths .list-item{
+      color:#ffd3da;
+      background:
+        linear-gradient(180deg, rgba(52, 13, 23, .96), rgba(28, 8, 14, .96));
+      border-color: rgba(255, 88, 108, .38);
+      box-shadow: 0 0 0 1px rgba(255,120,140,.05), 0 14px 28px rgba(0,0,0,.28);
+    }
+    #tab-oaths .oath-count-number{
+      color:#ff768f;
+      text-shadow: 0 0 16px rgba(255, 74, 104, .35);
+    }
+    #tab-oaths .oath-count-label,
+    #tab-oaths .detail-label,
+    #tab-oaths .empty{
+      color:#ffb7c1;
+    }
+    #tab-oaths .item-title{
+      color:#ffe7ea;
+    }
+    #tab-oaths .item-badge{
+      background: rgba(255, 76, 104, .14);
+      color:#ffb0bc;
+      border-color: rgba(255, 112, 132, .36);
+    }
+    #tab-oaths .warning-box{
+      position:relative;
+      overflow:hidden;
+      animation: oathPulse 2.3s ease-in-out infinite;
+    }
+    #tab-oaths .oath-count-box{
+      position:relative;
+      overflow:hidden;
+    }
+    #tab-oaths .warning-box::before,
+    #tab-oaths .oath-count-box::before{
+      content:"";
+      position:absolute;
+      inset:-40% auto auto -20%;
+      width:48%;
+      height:220%;
+      background: linear-gradient(90deg, transparent, rgba(255, 76, 104, .22), transparent);
+      transform: rotate(16deg);
+      animation: oathSweep 4.2s linear infinite;
+    }
+    #tab-oaths .list-item:hover{
+      transform: translateY(-3px) scale(1.01);
+      box-shadow: 0 0 18px rgba(255, 70, 90, .16), 0 14px 30px rgba(0,0,0,.30);
+    }
+    #tab-oaths .oath-effect-text{
+      color: #ff5a68;
+      font-weight: 700;
+    }
+
+    @keyframes panelIn{
+      from{ opacity:0; transform: translateY(10px); filter: blur(6px); }
+      to{ opacity:1; transform: translateY(0); filter: blur(0); }
+    }
+    @keyframes tabSheen{
+      0%{ transform: rotate(18deg) translateX(-120%); }
+      100%{ transform: rotate(18deg) translateX(320%); }
+    }
+    @keyframes clickPop{
+      0%{ transform: scale(.96); }
+      70%{ transform: scale(1.02); }
+      100%{ transform: scale(1); }
+    }
+    @keyframes oathSweep{
+      0%{ transform: translateX(-120%) rotate(16deg); }
+      100%{ transform: translateX(320%) rotate(16deg); }
+    }
+    @keyframes oathPulse{
+      0%,100%{ box-shadow: 0 0 0 1px rgba(255,90,110,.10), 0 14px 28px rgba(0,0,0,.28); }
+      50%{ box-shadow: 0 0 22px rgba(255,70,95,.18), 0 18px 36px rgba(0,0,0,.34); }
+    }
+
+    @media (prefers-reduced-motion: reduce){
+      .tab-content.active,
+      .press-anim,
+      #tab-oaths .warning-box,
+      #tab-oaths .warning-box::before,
+      #tab-oaths .oath-count-box::before,
+      .tab-btn:hover::after{
+        animation: none !important;
+      }
+      .info-item, .tab-btn, .tab-content, .list-item, .char-card, .warning-box, .oath-count-box,
+      .relation-basic{
+        transition: none !important;
+      }
+      .relation-thought{
+        width:100%;
+        margin-top:2px;
+        color: var(--text-soft);
+      }
+    }
+  </style>
+
+  <script type="module">
+    import { registerMvuSchema } from 'https://testingcf.jsdelivr.net/gh/StageDog/tavern_resource/dist/util/mvu_zod.js';
+
+    const effectSchema = z.object({
+      类型: z.enum(['增益', '减益', '特殊']).or(z.string()).prefault('特殊'),
+      效果: z.string().prefault(''),
+      剩余时间: z.string().prefault(''),
+      来源: z.string().prefault('')
+    }).prefault({});
+
+    const itemSchema = z.object({
+      类型: z.enum(['道具', '容器', '载体', '消耗品', '材料', '武器', '装备']).or(z.string()).prefault('道具'),
+      数量: z.coerce.number().prefault(1),
+      标签: z.string().prefault(''),
+      作用: z.string().prefault(''),
+      描述: z.string().prefault(''),
+      穿戴: z.boolean().prefault(false),
+      位置: z.string().prefault(''),
+      价值: z.string().prefault('')
+    }).prefault({});
+
+    const skillSchema = z.object({
+      类型: z.enum(['主动', '被动', '复合']).or(z.string()).prefault('主动'),
+      标签: z.string().prefault(''),
+      作用: z.string().prefault(''),
+      描述: z.string().prefault('')
+    }).prefault({});
+
+    const currencySchema = z.object({
+      铜角: z.coerce.number().prefault(0),
+      银冠: z.coerce.number().prefault(0),
+      金辉: z.coerce.number().prefault(0)
+    }).prefault({});
+
+    const characterBaseSchema = z.object({
+      种族: z.string().prefault(''),
+      身份: z.string().prefault(''),
+      职业: z.string().prefault(''),
+      状态效果: z.record(z.string(), effectSchema).prefault({}),
+      货币: currencySchema,
+      物品: z.record(z.string(), itemSchema).prefault({}),
+      技艺: z.record(z.string(), skillSchema).prefault({})
+    });
+
+    export const schema = z.object({
+      stat_data: z.object({
+        世界: z.object({
+          时间: z.string().prefault(''),
+          地点: z.string().prefault('')
+        }).prefault({}),
+        任务列表: z.record(z.string(), z.object({
+          状态: z.string().prefault(''),
+          关注度: z.enum(['高', '中', '低']).or(z.string()).prefault('低'),
+          进展: z.string().prefault(''),
+          详情: z.string().prefault(''),
+          目标: z.string().prefault(''),
+          奖励: z.string().prefault('')
+        }).prefault({})).prefault({}),
+        十重誓约之罚: z.object({
+          第一约定: z.boolean().prefault(false),
+          第二约定: z.boolean().prefault(false),
+          第三约定: z.boolean().prefault(false),
+          第四约定: z.boolean().prefault(false),
+          第五约定: z.boolean().prefault(false),
+          第六约定: z.boolean().prefault(false),
+          第七约定: z.boolean().prefault(false),
+          第八约定: z.boolean().prefault(false),
+          第九约定: z.boolean().prefault(false),
+          第十约定: z.boolean().prefault(false)
+        }).prefault({}),
+        主角: characterBaseSchema.prefault({}),
+        关系列表: z.record(z.string(), characterBaseSchema.extend({
+          在场: z.boolean().prefault(false),
+          性格: z.string().prefault(''),
+          喜爱: z.string().prefault(''),
+          外貌: z.string().prefault(''),
+          著装: z.string().prefault(''),
+          好感度: z.coerce.number().transform(v => _.clamp(v, -100, 100)).prefault(0),
+          心里话: z.string().prefault(''),
+          背景故事: z.string().prefault('')
+        }).prefault({})).prefault({})
+      }).prefault({})
+    });
+
+    $(() => {
+      registerMvuSchema(schema);
+    });
+
+    function tone(map, v, fallback){
+      return map[v] || fallback;
+    }
+
+    const effectTone = v => tone({
+      '增益': 'tone-effect-buff',
+      '减益': 'tone-effect-debuff',
+      '特殊': 'tone-effect-special'
+    }, v, 'tone-effect-special');
+
+    const itemTone = v => tone({
+      '道具': 'tone-item-道具',
+      '容器': 'tone-item-容器',
+      '载体': 'tone-item-载体',
+      '消耗品': 'tone-item-消耗品',
+      '材料': 'tone-item-材料',
+      '武器': 'tone-item-武器',
+      '装备': 'tone-item-装备'
+    }, v, 'tone-item-道具');
+
+    const skillTone = v => tone({
+      '主动': 'tone-skill-主动',
+      '被动': 'tone-skill-被动',
+      '复合': 'tone-skill-复合'
+    }, v, 'tone-skill-主动');
+
+    const questTone = v => tone({
+      '高': 'tone-quest-high',
+      '中': 'tone-quest-mid',
+      '低': 'tone-quest-low'
+    }, v, 'tone-quest-low');
+
+    function favorTone(v){
+      if (v > 20) return 'favor-high';
+     if (v < -20) return 'favor-low';
+      return '';
+    }
+
+    function coinRow(c){
+      return `
+        <div class="coin-row">
+          <span class="coin-item coin-gold">金辉：<span>${c?.金辉 || 0}</span></span>
+          <span class="coin-item coin-silver">银冠：<span>${c?.银冠 || 0}</span></span>
+          <span class="coin-item coin-copper">铜角：<span>${c?.铜角 || 0}</span></span>
+        </div>
+      `;
+    }
+
+    function pressFx($el){
+      if (!$el || !$el.length) return;
+      $el.removeClass('press-anim');
+      void $el[0].offsetWidth;
+      $el.addClass('press-anim');
+      window.setTimeout(() => $el.removeClass('press-anim'), 180);
+    }
+
+    function setupTabs(){
+      $(document).on('click', '.tab-btn', function(){
+        const $btn = $(this);
+        pressFx($btn);
+
+        const $block = $btn.closest('.tabs-block');
+        const target = $btn.data('target');
+
+        $block.find('.tab-btn').removeClass('active');
+        $block.find('.tab-content').removeClass('active');
+
+        $btn.addClass('active');
+        $block.find('#' + target).addClass('active');
+      });
+
+      $(document).on('click', '.relation-basic', function(){
+        const $head = $(this);
+        pressFx($head);
+
+        const $card = $head.closest('.relation-card');
+        const collapsed = $card.hasClass('collapsed');
+
+        $card.toggleClass('collapsed');
+        $card.find('.relation-arrow').text(collapsed ? '▾' : '▸');
+
+        if (collapsed) {
+        const $basicBtn = $card.find('.tab-btn[data-target$="-basic"]');
+        const $tabsBlock = $card.find('.tabs-block');
+
+        $tabsBlock.find('.tab-btn').removeClass('active');
+        $tabsBlock.find('.tab-content').removeClass('active');
+
+        $basicBtn.addClass('active');
+        $tabsBlock.find('.tab-content[id$="-basic"]').addClass('active');
+        } 
+      });
+    }
+
+    function renderEffects(obj, id){
+      const $c = $('#' + id).empty();
+      if (_.isEmpty(obj)) return $c.html('<div class="empty">无状态效果</div>');
+
+      _.forEach(obj, (e, n) => {
+        $c.append(`
+          <div class="list-item">
+            <div class="item-header">
+              <span class="item-title ${effectTone(e.类型)}">${n}</span>
+              <span class="item-badge">${e.类型 || '特殊'}</span>
+            </div>
+            <div class="item-detail">
+              <div class="detail-row"><span class="detail-label">效果：</span>${e.效果 || ''}</div>
+              <div class="detail-row"><span class="detail-label">剩余时间：</span>${e.剩余时间 || ''}</div>
+              <div class="detail-row"><span class="detail-label">来源：</span>${e.来源 || ''}</div>
+            </div>
+          </div>
+        `);
+      });
+    }
+
+    function renderItems(obj, id){
+      const $c = $('#' + id).empty();
+      if (_.isEmpty(obj)) return $c.html('<div class="empty">空无一物</div>');
+
+      _.forEach(obj, (i, n) => {
+        $c.append(`
+          <div class="list-item">
+            <div class="item-header">
+              <span class="item-title ${itemTone(i.类型)}">${n} x${i.数量 || 1}</span>
+              <div class="item-header-right">
+                ${i.穿戴 ? '<span class="item-worn">已穿戴</span>' : ''}
+                <span class="item-badge">${i.类型 || '道具'}</span>
+              </div>
+            </div>
+            <div class="item-detail">
+              <div class="detail-row"><span class="detail-label">标签：</span>${i.标签 || ''}</div>
+              <div class="detail-row"><span class="detail-label">作用：</span>${i.作用 || ''}</div>
+              <div class="detail-row"><span class="detail-label">描述：</span>${i.描述 || ''}</div>
+              <div class="detail-row"><span class="detail-label value-label">价值：</span>${i.价值 || '未定价'}</div>
+            </div>
+          </div>
+        `);
+      });
+    }
+
+    function renderSkills(obj, id){
+      const $c = $('#' + id).empty();
+      if (_.isEmpty(obj)) return $c.html('<div class="empty">无技艺</div>');
+
+      _.forEach(obj, (s, n) => {
+        $c.append(`
+          <div class="list-item">
+            <div class="item-header">
+              <span class="item-title ${skillTone(s.类型)}">${n}</span>
+              <span class="item-badge">${s.类型 || '主动'}</span>
+            </div>
+            <div class="item-detail">
+              <div class="detail-row"><span class="detail-label">标签：</span>${s.标签 || ''}</div>
+              <div class="detail-row"><span class="detail-label">作用：</span>${s.作用 || ''}</div>
+              <div class="detail-row"><span class="detail-label">描述：</span>${s.描述 || ''}</div>
+            </div>
+          </div>
+        `);
+      });
+    }
+
+    function renderQuests(obj, id){
+      const $c = $('#' + id).empty();
+      if (_.isEmpty(obj)) return $c.html('<div class="empty">无任务</div>');
+
+      _.forEach(obj, (q, n) => {
+        $c.append(`
+          <div class="list-item">
+            <div class="item-header">
+              <span class="item-title ${questTone(q.关注度)}">${n}</span>
+              <span class="item-badge">关注：${q.关注度 || '低'}</span>
+            </div>
+            <div class="item-detail">
+              <div class="detail-row"><span class="detail-label">状态：</span>${q.状态 || ''}</div>
+              <div class="detail-row"><span class="detail-label">详情：</span>${q.详情 || ''}</div>
+              <div class="detail-row"><span class="detail-label">目标：</span>${q.目标 || ''}</div>
+              <div class="detail-row"><span class="detail-label">进展：</span>${q.进展 || ''}</div>
+              <div class="detail-row"><span class="detail-label reward-label">奖励：</span>${q.奖励 || ''}</div>
+            </div>
+          </div>
+        `);
+      });
+    }
+
+    function oathEffectText(key){
+      const map = {
+        '第一约定': '宁宁更容易迷路、失散，或在需要陪伴时被迫独自面对环境。',
+        '第二约定': '他人更容易失信、误导或欺骗宁宁，言语与意图更难被正确理解。',
+        '第三约定': '宁宁更容易被忽视，警告更难被听见，存在感会被压低。',
+        '第四约定': '危险事件更容易靠近宁宁，她更容易暴露、受困或遭遇攻击。',
+        '第五约定': '宁宁更容易被轻视、驱赶或否定身份，尊重感被削弱。',
+        '第六约定': '宁宁更容易失去自主选择的空间，路线与行动更容易被干扰。',
+        '第七约定': '愧疚无法替代偿还，宁宁的恢复与运势会变得更不稳定。',
+        '第八约定': '与宁宁有关的痕迹更容易消失，回忆、线索与记录更容易断裂。',
+        '第九约定': '宁宁更容易经历期待落空，成果、快乐与希望更容易被打断。',
+        '第十约定': '前九项恶意会被放大，宁宁的生命安全会被命运额外盯上。'
+      };
+      return map[key] || '世界恶意正在偏向宁宁。';
+    }
+
+    function renderOaths(stat){
+      const $c = $('#tab-oaths').empty();
+      const o = _.get(stat, '十重誓约之罚', {});
+
+      const names = {
+        第一约定:'第一约·陪伴',
+        第二约定:'第二约·信任',
+        第三约定:'第三约·注视',
+        第四约定:'第四约·守护',
+        第五约定:'第五约·尊重',
+        第六约定:'第六约·自由',
+        第七约定:'第七约·偿还',
+        第八约定:'第八约·记忆',
+        第九约定:'第九约·期待',
+        第十约定:'第十约·生命'
+      };
+
+      const broken = Object.keys(names).filter(k => o[k]);
+
+      $c.append(`
+        <div class="oath-count-box">
+          <div class="oath-count-number">${broken.length}</div>
+          <div class="oath-count-label">项约定已违约</div>
+        </div>
+      `);
+
+      if (broken.length === 0) {
+        $c.append(`
+          <div class="warning-box">
+            <div><b>世界恶意影响：</b>暂无显著显现</div>
+            <div>当前没有已违约的誓约。</div>
+          </div>
+        `);
+        return;
+      }
+
+      $c.append(`
+        <div class="warning-box">
+          <div><b>世界恶意影响：</b>正在发生</div>
+          <div>宁宁正处在被世界偏向不利的位置。</div>
+        </div>
+      `);
+
+      broken.forEach(k => {
+        $c.append(`
+          <div class="list-item">
+            <div class="item-header">
+              <span class="item-title">${names[k]}</span>
+              <span class="item-badge">已违约</span>
+            </div>
+            <div class="item-detail">
+              <div class="detail-row">
+                <span class="detail-label">影响：</span>
+                <span class="oath-effect-text">${oathEffectText(k)}</span>
+              </div>
+            </div>
+          </div>
+        `);
+      });
+    }
+
+    function renderBackground(text, id){
+      const $c = $('#' + id).empty();
+      $c.append(`
+        <div class="list-item">
+          <div class="relation-bg-text">
+            ${text && text.trim() ? text : '<span class="empty">暂无背景故事</span>'}
+          </div>
+        </div>
+      `);
+    }
+
+    function buildNestedCharTabs(sid, char){
+      return `
+        <div class="tabs-block">
+          <div class="tabs">
+            <button class="tab-btn active" data-target="${sid}-basic">基本</button>
+            <button class="tab-btn" data-target="${sid}-effects">状态效果</button>
+            <button class="tab-btn" data-target="${sid}-items">物品</button>
+            <button class="tab-btn" data-target="${sid}-skills">技艺</button>
+            <button class="tab-btn" data-target="${sid}-bg">背景故事</button>
+          </div>
+
+          <div id="${sid}-basic" class="tab-content active">
+            <div class="detail-row"><span class="detail-label">性格：</span>${char.性格 || ''}</div>
+            <div class="detail-row"><span class="detail-label">喜爱：</span>${char.喜爱 || ''}</div>
+            <div class="detail-row"><span class="detail-label">外貌：</span>${char.外貌 || ''}</div>
+            <div class="detail-row"><span class="detail-label">著装：</span>${char.著装 || ''}</div>
+          </div>
+
+          <div id="${sid}-effects" class="tab-content"></div>
+          <div id="${sid}-items" class="tab-content"></div>
+          <div id="${sid}-skills" class="tab-content"></div>
+          <div id="${sid}-bg" class="tab-content"></div>
+        </div>
+      `;
+    }
+
+    function renderRelations(obj, id){
+      const $c = $('#' + id).empty();
+      if (_.isEmpty(obj)) return $c.html('<div class="empty">孤身一人</div>');
+
+      let i = 0;
+      _.forEach(obj, (c, name) => {
+        const sid = `rel_${i++}`;
+        const coins = c.货币 || { 铜角: 0, 银冠: 0, 金辉: 0 };
+
+        $c.append(`
+          <div class="char-card relation-card collapsed">
+            <div class="relation-basic">
+              <div class="relation-basic-top">
+                <div class="relation-name">${name}</div>
+                <div class="relation-basic-main">
+                  ${c.在场 ? '<span class="relation-present">在场</span>' : ''}
+                  <span class="item-badge relation-favor ${favorTone(c.好感度 || 0)}">
+                    好感 ${c.好感度 || 0}
+                  </span>
+                  <span class="relation-arrow">▸</span>
+                </div>
+              </div>
+
+              <div class="relation-basic-sub">
+                <span>${c.种族 || ''} / ${c.身份 || ''} / ${c.职业 || ''}</span>
+                <div class="relation-coin">${coinRow(coins)}</div>
+                <div class="relation-thought">
+                  <span class="detail-label">心里话：</span>${c.心里话 || ''}
+                </div> 
+              </div>
+            </div>
+
+            <div class="relation-body">
+              ${buildNestedCharTabs(sid, c)}
+            </div>
+          </div>
+        `);
+
+        renderEffects(c.状态效果 || {}, `${sid}-effects`);
+        renderItems(c.物品 || {}, `${sid}-items`);
+        renderSkills(c.技艺 || {}, `${sid}-skills`);
+        renderBackground(c.背景故事 || '', `${sid}-bg`);
+      });
+    }
+
+    function updateData(){
+      const stat = _.get(getAllVariables(), 'stat_data', {});
+      if (_.isEmpty(stat)) return;
+
+      $('#base-time').text(_.get(stat, '世界.时间', '--'));
+      $('#base-loc').text(_.get(stat, '世界.地点', '--'));
+
+      const main = _.get(stat, '主角', {});
+      $('#base-race').text(main.种族 || '--');
+      $('#base-id').text(main.身份 || '--');
+      $('#base-job').text(main.职业 || '--');
+
+      const c = main.货币 || { 铜角: 0, 银冠: 0, 金辉: 0 };
+      $('#base-coin-gold').text(c.金辉 || 0);
+      $('#base-coin-silver').text(c.银冠 || 0);
+      $('#base-coin-copper').text(c.铜角 || 0);
+
+      renderOaths(stat);
+      renderEffects(main.状态效果 || {}, 'tab-effects');
+      renderItems(main.物品 || {}, 'tab-items');
+      renderSkills(main.技艺 || {}, 'tab-skills');
+      renderQuests(stat.任务列表 || {}, 'tab-quests');
+      renderRelations(stat.关系列表 || {}, 'tab-relations');
+    }
+
+    async function init(){
+      await waitGlobalInitialized('Mvu');
+      setupTabs();
+      updateData();
+    }
+
+    $(errorCatched(init));
+  </script>
+</head>
+
+<body>
+  <div class="status-panel">
+    <div class="base-info">
+      <div class="base-group base-world">
+        <div class="info-item"><span class="info-label">世界时间:</span><span id="base-time">--</span></div>
+        <div class="info-item"><span class="info-label">当前地点:</span><span id="base-loc">--</span></div>
+      </div>
+
+      <div class="base-divider"></div>
+
+      <div class="base-group base-meta">
+        <div class="info-item info-stack"><span class="info-label">种族</span><span class="info-value" id="base-race">--</span></div>
+        <div class="info-item info-stack"><span class="info-label">身份</span><span class="info-value" id="base-id">--</span></div>
+        <div class="info-item info-stack"><span class="info-label">职业</span><span class="info-value" id="base-job">--</span></div>
+
+        <div class="info-item info-coin">
+          <span class="info-label">货币</span>
+          <div class="base-coin-row">
+            <span class="coin-item coin-gold">金辉：<span id="base-coin-gold">0</span></span>
+            <span class="coin-item coin-silver">银冠：<span id="base-coin-silver">0</span></span>
+            <span class="coin-item coin-copper">铜角：<span id="base-coin-copper">0</span></span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="tabs-block">
+      <div class="tabs">
+        <button class="tab-btn active" data-target="tab-oaths">十重誓约</button>
+        <button class="tab-btn" data-target="tab-quests">任务列表</button>
+        <button class="tab-btn" data-target="tab-effects">状态效果</button>
+        <button class="tab-btn" data-target="tab-items">物品</button>
+        <button class="tab-btn" data-target="tab-skills">技艺</button>
+        <button class="tab-btn" data-target="tab-relations">关系列表</button>
+      </div>
+
+      <div id="tab-oaths" class="tab-content active"></div>
+      <div id="tab-quests" class="tab-content"></div>
+      <div id="tab-effects" class="tab-content"></div>
+      <div id="tab-items" class="tab-content"></div>
+      <div id="tab-skills" class="tab-content"></div>
+      <div id="tab-relations" class="tab-content"></div>
+    </div>
+  </div>
+</body>
+</html>
