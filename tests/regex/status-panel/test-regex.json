@@ -1,0 +1,17 @@
+{
+  "disabled": false,
+  "findRegex": "<StatusPlaceHolderImpl/>",
+  "id": "a7f4e4c1-2d9b-4a73-9f15-6c2e8b0d51a4",
+  "markdownOnly": true,
+  "maxDepth": 2,
+  "minDepth": null,
+  "placement": [
+    2
+  ],
+  "promptOnly": false,
+  "replaceString": "```html\n<div id=\"zscd-test-status-panel-root\"></div>\n<script>\n(function () {\n  const root = document.getElementById('zscd-test-status-panel-root');\n  if (!root || root.dataset.loading === 'true' || root.dataset.loaded === 'true') return;\n\n  function fail(error) {\n    root.dataset.loading = 'false';\n    root.dataset.failed = 'true';\n    root.textContent = '测试介面载入失败，请检查网络或浏览器控制台。';\n    console.error('[众生长地 regex test] remote resource load failed:', error);\n  }\n\n  root.dataset.loading = 'true';\n\n  fetch('https://raw.githubusercontent.com/yin-shi-luo142cm/zhongsheng-changdi-assets/4ce61772df018ee107a696906ea63ee17c9e6ceb/tests/regex/status-panel/index.html')\n    .then(response => {\n      if (!response.ok) throw new Error('HTTP ' + response.status);\n      return response.text();\n    })\n    .then(markup => {\n      const remote = new DOMParser().parseFromString(markup, 'text/html');\n      if (!remote.querySelector('.status-panel')) {\n        throw new Error('远端 HTML 缺少测试根节点 .status-panel');\n      }\n\n      remote.querySelectorAll('style').forEach((sourceStyle, index) => {\n        const styleId = 'zscd-test-status-panel-style-' + index;\n        if (document.getElementById(styleId)) return;\n\n        const style = document.createElement('style');\n        style.id = styleId;\n        style.textContent = sourceStyle.textContent;\n        document.head.appendChild(style);\n      });\n\n      root.innerHTML = remote.body.innerHTML;\n\n      const sourceModule = remote.querySelector('script[type=\"module\"]');\n      if (!sourceModule) {\n        root.dataset.loaded = 'true';\n        root.dataset.loading = 'false';\n        return;\n      }\n\n      const module = document.createElement('script');\n      module.type = 'module';\n      module.textContent = sourceModule.textContent;\n      module.addEventListener('load', () => {\n        root.dataset.loaded = 'true';\n        root.dataset.loading = 'false';\n      }, { once: true });\n      module.addEventListener('error', () => {\n        fail(new Error('远端 HTML 的 module script 执行失败'));\n      }, { once: true });\n      document.body.appendChild(module);\n    })\n    .catch(fail);\n})();\n</script>\n```\n",
+  "runOnEdit": true,
+  "scriptName": "[测试]状态栏远端载入",
+  "substituteRegex": 0,
+  "trimStrings": []
+}
