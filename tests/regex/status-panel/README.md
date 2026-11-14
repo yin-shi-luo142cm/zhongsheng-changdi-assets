@@ -58,7 +58,7 @@
 ## 在 SillyTavern 中进行实机验证
 
 1. 下载并导入 `test-regex.json`，确认正则名称显示为「[测试]状态栏远端载入」。
-2. 在测试对话中发送包含 `<StatusPlaceHolderImpl/>` 的消息，确认正则确实触发。
+2. 原样本的 `placement` 为 `[2]`（AI 输出），因此请让 AI 在回复中原样输出 `<StatusPlaceHolderImpl/>`，确认正则确实触发；不要只把占位符发在用户消息中。
 3. 检查结果是否显示状态栏内容，而不是只显示 HTML／JavaScript 代码。
 4. 打开浏览器开发者工具 Console／Network，检查 raw HTML 请求与 jsDelivr module 请求是否成功；特别留意 CORS、模块加载与全局对象错误。
 5. 再次触发、编辑消息及重绘，观察是否出现重复界面或旧节点残留。
